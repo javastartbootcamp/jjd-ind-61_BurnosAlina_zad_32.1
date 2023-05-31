@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class ExampleTest {
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+public class StreamsTaskTest {
 
     private StreamsTask streamsTask = new StreamsTask();
     private List<User> users;
@@ -36,9 +38,17 @@ public class ExampleTest {
         //when
         Collection<User> result = streamsTask.findWomen(users);
         //then
-        List<User> expected = new ArrayList<>();
-        expected.add(users.get(0));
-        expected.add(users.get(2));
+        List<User> expected = List.of(users.get(0), users.get(2));
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void shouldReturnEmptyList() {
+        users = new ArrayList<>();
+        //when
+        Collection<User> result = streamsTask.findWomen(users);
+        //then
+        List<User> expected = List.of();
         Assertions.assertEquals(expected, result);
     }
 
@@ -51,21 +61,36 @@ public class ExampleTest {
     }
 
     @Test
+    public void shouldThrowNoSuchElementExceptionForAvgMenAge() {
+        users = new ArrayList<>();
+        //when/then
+        Assertions.assertThrows(NoSuchElementException.class, () -> streamsTask.averageMenAge(users));
+    }
+
+    @Test
     public void shouldReturnExpensesByUserId() {
         //when
         Map<Long, List<Expense>> result = streamsTask.groupExpensesByUserId(expenses);
         //then
-        Map<Long, List<Expense>> expected = new HashMap<>();
-        expected.put(1L, new ArrayList<>(List.of(
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.get(1L)).isEqualTo(new ArrayList<>(List.of(
                 expenses.get(0),
                 expenses.get(1)
         )));
-        expected.put(2L, new ArrayList<>(List.of(
+        assertThat(result.get(2L)).isEqualTo(new ArrayList<>(List.of(
                 expenses.get(2),
                 expenses.get(3),
                 expenses.get(4)
         )));
-        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void shouldReturnEmptyMapForNoExpenses() {
+        expenses = new ArrayList<>();
+        //when
+        Map<Long, List<Expense>> result = streamsTask.groupExpensesByUserId(expenses);
+        //then
+        assertThat(result.size()).isEqualTo(0);
     }
 
     @Test
@@ -84,5 +109,21 @@ public class ExampleTest {
                 expenses.get(4)
         )));
         Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void shouldThrowNullPointerExceptionForNoUsers() {
+        users = new ArrayList<>();
+        //when/then
+        Assertions.assertThrows(NullPointerException.class, () -> streamsTask.groupExpensesByUser(users, expenses));
+    }
+
+    @Test
+    public void shouldReturnEmptyMapForNoExpensesSearchingByUser() {
+        expenses = new ArrayList<>();
+        //when
+        Map<User, List<Expense>> result = streamsTask.groupExpensesByUser(users, expenses);
+        //then
+        assertThat(result.size()).isEqualTo(0);
     }
 }
